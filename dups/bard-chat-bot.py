@@ -3,17 +3,23 @@ from streamlit_chat import message
 # from langchain.chat_models import ChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_anthropic import ChatAnthropic
+# from langchain_anthropic import ChatAnthropic
 from langchain.chains import ConversationChain
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
+from dotenv import load_dotenv
+
+
 import os
 
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+
+memory_length = st.sidebar.slider("Conversational Memory Length", 1, 15, 10)  
 
 # Initialize session state variables
 if 'buffer_memory' not in st.session_state:
-    st.session_state.buffer_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
+    st.session_state.buffer_memory = ConversationBufferWindowMemory(k=memory_length, return_messages=True)
 
 if "messages" not in st.session_state.keys(): # Initialize the chat message history
     st.session_state.messages = [
@@ -22,10 +28,10 @@ if "messages" not in st.session_state.keys(): # Initialize the chat message hist
 
 # Initialize ChatOpenAI and ConversationChain
 # llm = ChatOpenAI(model_name="gpt-3.5-turbo-0125")
-llm = ChatGoogleGenerativeAI(model = "gemini-pro")
+llm_model = ChatGoogleGenerativeAI(model = "gemini-pro")
 # llm = ChatAnthropic(model_name="claude-3-sonnet-20240229")
 
-conversation = ConversationChain(memory=st.session_state.buffer_memory, llm=llm)
+conversation = ConversationChain(memory=st.session_state.buffer_memory, llm=llm_model)
 
 # Create user interface
 st.title("🗣️ Conversational Chatbot")
