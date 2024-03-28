@@ -41,7 +41,7 @@ class GroqAssistant:
         with open(MESSAGE_HISTORY_FILE, 'wb') as file:
             pickle.dump(self.message_history, file)
 
-    def chat(self):
+    def chat_with_human(self):
         models = ["Mixtral-8x7b-32768", "llama2-70b-4096"]
         model = models[0]
 
@@ -55,7 +55,8 @@ class GroqAssistant:
         for message in self.message_history:
             print(message["role"] + ": " + message["content"])
 
-        while True:
+        exit_chat=10
+        while exit_chat>0:
             user_input = input("You: ")
             if user_input.lower() == "exit":
                 print("Goodbye!")
@@ -67,6 +68,7 @@ class GroqAssistant:
             # Store user input and AI response in message history
             self.message_history.append({"role": "user", "content": user_input})
             self.message_history.append({"role": "groqbot", "content": response})
+            exit_chat-=1
 
         save_memory = input("save chat history(Y/N): ")
         if save_memory =="Y":
@@ -74,11 +76,25 @@ class GroqAssistant:
             self.save_memory()
             self.save_message_history()
 
+    def chat_with_other_bot(self,bot_input):
+        groq_chat = ChatGroq(
+            groq_api_key=self.groq_api_key,
+            model_name="Mixtral-8x7b-32768"
+        )
+
+        conversation = ConversationChain(memory=self.buffer_memory, 
+                                         llm=groq_chat)
+        
+        groq_response = conversation.predict(input=bot_input)
+
+        return groq_response
+        
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Chat with a Groq AI assistant via command line')
-    parser.add_argument('--memory_length', type=int, default=10,
+    parser = argparse.ArgumentParser(description='Chat with a Groq AI')
+    parser.add_argument('--memory_length', type=int, default=2,
                         help='Conversational Memory Length (default: 10)')
     args = parser.parse_args()
 
     groq_assistant = GroqAssistant(memory_length=args.memory_length)
-    groq_assistant.chat()
+    groq_assistant.chat_with_human()
