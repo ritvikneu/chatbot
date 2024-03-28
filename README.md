@@ -10,7 +10,7 @@
 3. Let's use streamlit secrets to store API KEY (do not share/post anywhere it's a secret)
    - create folder/file .streamlit/secrets.toml and add key against GOOGLE_API_KEY
 4. Run locally 
-   - streamlit run bard-chat-bot.py 
+   - streamlit run gemini_chat_bot_st.py 
 5. Deploy your app on cloud, refer <a href="https://docs.streamlit.io/streamlit-community-cloud/deploy-your-app">Streamlit Docs</a> 
 
 ## GROQ BOT
@@ -20,7 +20,7 @@
 3. Let's use environment variables to store API key (do not share/post anywhere it's a secret)
    - create .env file and add key against GROQ_API_KEY   
 4. Run locally
-   - streamlit run groq-chat-bot.py
+   - streamlit run groq_chat_bot_st.py
 5. Deploy your app on cloud, refer <a href="https://docs.streamlit.io/streamlit-community-cloud/deploy-your-app">Streamlit Docs</a> 
 
 ## Interested in making the two bots talk:
