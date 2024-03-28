@@ -50,7 +50,7 @@ class GeminiAssistant:
         for message in self.message_history:
             print(message["role"] + ": " + message["content"])
 
-        exit_chat=3
+        exit_chat=1
         while exit_chat>0:
             user_input = input("You: ")
             if user_input.lower() == "exit":
@@ -62,7 +62,7 @@ class GeminiAssistant:
 
             # Store user input and AI response in message history
             self.message_history.append({"role": "user", "content": user_input})
-            self.message_history.append({"role": "assistant", "content": response})
+            self.message_history.append({"role": "bardbot", "content": response})
             exit_chat-=1
         
         save_memory = input("save chat history(Y/N): ")
@@ -71,11 +71,52 @@ class GeminiAssistant:
             self.save_memory()
             self.save_message_history()
 
+    def chat_with_human(self):
+        """Initiate conversation with Gemini AI."""
+        gemini_chat = ChatGoogleGenerativeAI(google_api_key= google_api_key, model="gemini-pro")
+        conversation = ConversationChain(memory=self.buffer_memory, llm=gemini_chat)
+
+        for message in self.message_history:
+            print(message["role"] + ": " + message["content"])
+
+        exit_chat=1
+        while exit_chat>0:
+            user_input = input("You: ")
+            if user_input.lower() == "exit":
+                print("Goodbye!")
+                break
+
+            response = conversation.predict(input=user_input)
+            print("Gemini Bot:", response)
+
+            # Store user input and AI response in message history
+            self.message_history.append({"role": "user", "content": user_input})
+            self.message_history.append({"role": "bardbot", "content": response})
+            exit_chat-=1
+
+        save_memory = input("save chat history(Y/N): ")
+        if save_memory =="Y":
+            # Store memory and message history
+            self.save_memory()
+            self.save_message_history()
+
+    def chat_with_other_bot(self,bot_input):
+        """Initiate conversation with Gemini AI."""
+        gemini_chat = ChatGoogleGenerativeAI(google_api_key= google_api_key, 
+                                             model="gemini-pro")
+        
+        conversation = ConversationChain(memory=self.buffer_memory, 
+                                         llm=gemini_chat)
+        gemini_response = conversation.predict(input=bot_input)
+        return gemini_response
+
+    
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Chat with an AI assistant via command line')
+    parser = argparse.ArgumentParser(description='Chat with an Gemini AI')
     parser.add_argument('--memory_length', type=int, default=10,
                         help='Conversational Memory Length (default: 10)')
     args = parser.parse_args()
 
     gemini_assistant = GeminiAssistant(memory_length=args.memory_length)
-    gemini_assistant.chat()
+    gemini_assistant.chat_with_human()
