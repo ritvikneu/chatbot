@@ -13,7 +13,8 @@ def main():
     # os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
     os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
-    memory_length = st.sidebar.slider("Conversational Memory Length", 1, 15, 10)  
+    # memory_length = st.sidebar.slider("Conversational Memory Length", 1, 15, 10)  
+    memory_length = 3
 
     # Initialize session state variables
     if 'chat_memory' not in st.session_state:
