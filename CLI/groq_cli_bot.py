@@ -55,8 +55,8 @@ class GroqAssistant:
         for message in self.message_history:
             print(message["role"] + ": " + message["content"])
 
-        exit_chat=10
-        while exit_chat>0:
+        # exit_chat=10
+        while True:
             user_input = input("You: ")
             if user_input.lower() == "exit":
                 print("Goodbye!")
@@ -68,7 +68,7 @@ class GroqAssistant:
             # Store user input and AI response in message history
             self.message_history.append({"role": "user", "content": user_input})
             self.message_history.append({"role": "groqbot", "content": response})
-            exit_chat-=1
+            # exit_chat-=1
 
         save_memory = input("save chat history(Y/N): ")
         if save_memory =="Y":
