@@ -100,7 +100,7 @@ class GeminiAssistant:
             self.save_memory()
             self.save_message_history()
 
-    def chat_with_other_bot(self,bot_input):
+    def chat_with_other_bot(self,bot_input,template):
         """Initiate conversation with Gemini AI."""
         gemini_chat = ChatGoogleGenerativeAI(google_api_key= google_api_key, 
                                              model="gemini-pro")
