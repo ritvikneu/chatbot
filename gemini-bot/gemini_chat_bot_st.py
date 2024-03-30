@@ -21,7 +21,7 @@ class Gemini:
         # Initialize the chat message history
         if "messages" not in st.session_state.keys(): 
             st.session_state.messages = [
-                {"role": "assistant", "content": "How can I help you today?"}
+                {"role": "gemini", "content": "How can I help you today?"}
             ]
 
         gemini_chat = ChatGoogleGenerativeAI(model = "gemini-pro")
@@ -36,13 +36,13 @@ class Gemini:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
 
-        # If last message is not from assistant, generate a new response
-        if st.session_state.messages[-1]["role"] != "assistant":
-            with st.chat_message("assistant"):
+        # If last message is not from gemini, generate a new response
+        if st.session_state.messages[-1]["role"] != "gemini":
+            with st.chat_message("gemini"):
                 with st.spinner("Thinking..."):
                     response = conversation.predict(input = prompt)
                     st.write(response)
-                    message = {"role": "assistant", "content": response}
+                    message = {"role": "gemini", "content": response}
                     st.session_state.messages.append(message) # Add response to message history
 
 if __name__ == "__main__":

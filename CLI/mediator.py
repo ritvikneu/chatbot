@@ -6,6 +6,17 @@ class Mediator:
     def __init__(self, gemini_assistant, groq_assistant):
         self.gemini_assistant = gemini_assistant
         self.groq_assistant = groq_assistant
+        template = """The following is a friendly conversation between Gemini and Groq. The AIs are 
+                talkative but keeps the response simple, short and concise.
+                If the AI does not know the answer to a question, it truthfully says it does not know.
+
+                Current conversation:
+                {history}
+                {input}
+                Gemini:
+                Groq:
+                """
+        prompt_template = PromptTemplate(input_variables=["history", "input"], template=template)
 
     def communicate(self):
         print("Starting communication between Gemini and Groq assistants.")

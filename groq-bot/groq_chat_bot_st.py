@@ -8,6 +8,7 @@ from langchain.chains.conversation.memory import ConversationBufferWindowMemory 
 from langchain_groq import ChatGroq #llm system resides here and pass inference parameters
 from langchain.prompts import PromptTemplate #prompt template
 
+from langchain import chains
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +33,7 @@ class GroqStreamLitBot:
         # Initialize the chat message history
         if "messages" not in st.session_state.keys(): 
             st.session_state.messages = [
-                {"role": "assistant", "content": "How can I help you today?"}
+                {"role": "groq", "content": "How can I help you today?"}
             ]
 
         groq_chat = ChatGroq(
@@ -52,15 +53,13 @@ class GroqStreamLitBot:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
 
-        if st.session_state.messages[-1]["role"] != "assistant":
-            with st.chat_message("assistant"):
+        if st.session_state.messages[-1]["role"] != "groq":
+            with st.chat_message("groq"):
                 with st.spinner("brooding"):
                     response = conversation.predict(input=prompt)
                     st.write(response)
-                    message = {"role":"assistant","content":response}
+                    message = {"role":"groq","content":response}
                     st.session_state.messages.append(message)
-
-
 
 if __name__ == "__main__":
     GroqStreamLitBot.chat_with_groq()
