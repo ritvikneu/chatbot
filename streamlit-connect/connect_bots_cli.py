@@ -13,7 +13,10 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 groq_api_key = os.getenv("GROQ_API_KEY")
 
 # Initialize conversation memory and messages
-chat_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
+chat_memory = ConversationBufferWindowMemory(k=3, 
+                                             human_prefix= "gemini",
+                                             ai_prefix="groq",
+                                             return_messages=True)
 messages = [
     {"role": "gemini", "content": "I'm Gemini Bot"},
     {"role": "groq", "content": "I'm Groq Bot"},
@@ -42,7 +45,7 @@ class ConnectBots:
         self.gemini_response = ""
 
     def converse(self):
-        exit_chat = 5
+        exit_chat = 3
         while exit_chat > 0:
             for message in messages:
                 print(message["role"] + ": " + message["content"])
@@ -60,6 +63,7 @@ class ConnectBots:
                 messages.append({"role": "groq", "content": self.groq_response})
 
             exit_chat -= 1
+        return
 
 
 class Groq:
