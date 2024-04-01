@@ -24,15 +24,15 @@ messages = [
 ]
 
 # Define conversation prompt template
-template = """The following is a friendly conversation between Gemini and Groq. The AIs are 
+template = """The following is a friendly conversation. The AI is
 talkative but keeps the response simple, short and concise.
 If the AI does not know the answer to a question, it truthfully says it does not know.
 
 Current conversation:
 {history}
 {input}
-Gemini:
-Groq:
+gemini:
+groq:
 """
 prompt_template = PromptTemplate(input_variables=["history", "input"], template=template)
 
@@ -70,28 +70,31 @@ class Groq:
     def __init__(self, prompt_template):
         self.groq_chat = ChatGroq(
             groq_api_key=groq_api_key,
-            model_name="Mixtral-8x7b-32768"
+            model_name="Mixtral-8x7b-32768",
+            max_output_tokens=100
         )
-        self.conversation = ConversationChain(memory=chat_memory,
+        self.groq_conversation = ConversationChain(memory=chat_memory,
                                                llm=self.groq_chat,
                                                verbose=True,
                                                prompt=prompt_template)
 
     def chat_with_groq(self, prompt):
-        groq_response = self.conversation.predict(input=prompt)
+        groq_response = self.groq_conversation.predict(input=prompt)
         return groq_response
 
 
 class Gemini:
     def __init__(self, prompt_template):
-        self.gemini_chat = ChatGoogleGenerativeAI(model="gemini-pro")
-        self.conversation = ConversationChain(memory=chat_memory,
+        self.gemini_chat = ChatGoogleGenerativeAI(model="gemini-pro",
+                                                  max_output_tokens=100,
+                                                  )
+        self.gemini_conversation = ConversationChain(memory=chat_memory,
                                                llm=self.gemini_chat,
                                                verbose=True,
                                                prompt=prompt_template)
 
     def chat_with_gemini(self, prompt):
-        gemini_response = self.conversation.predict(input=prompt)
+        gemini_response = self.gemini_conversation.predict(input=prompt)
         return gemini_response
 
 
