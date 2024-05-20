@@ -11,47 +11,20 @@ import os
 
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 groq_api_key = os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
-st.session_state.chat_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
-st.session_state.messages = [
-                {"role": "bard", "content": "I'm bard"},
-                {"role": "groq", "content": "I'm groq"},
-                {"role": "groq", "content": "Let's start the conversation"}
-            ]
 
-bard_template = """You are interviewing a candidate for a SDE role. 
-Keep the questions simple and concise. Wait for the candidate  to respond before asking the next question.
-
-
-Previous conversation:
-{history}
-groq: {input}
-bard:
-
-"""
-
-
-groq_template = """You are the candidate being interviewed for a job.
-Keep the answers simple and concise.
-If you do not know the answer to a question, you say you dont not know. Wait for the interviewer to ask the next question.
-Previous conversation:
-{history}
-bard: {input}
-groq: 
-
-"""
-
-
-gemini_prompt_template = PromptTemplate(input_variables=["history", "input"], template=bard_template)
-
-groq_prompt_template = PromptTemplate(input_variables=["history", "input"], template=groq_template)
 
 class Connect_bots:
-    def __init__(self):
+    def __init__(self,gemini_prompt_template,groq_prompt_template):
         self.gemini = Gemini(gemini_prompt_template)
         self.groq = Groq(groq_prompt_template)
         self.groq_response = st.session_state.messages[-1]["content"]
         self.gemini_response = ""
     
+    # def input_prompt(self):
+    #     if input_msg:
+    #         formatted_msg = f"I'm Groq. Let's have a conversation about {input_msg}"
+    #         st.session_state.messages.append({"role": "groq", "content": formatted_msg})
+    #         self.converse()
 
     def converse(self):
         exit_chat = 5
@@ -70,13 +43,7 @@ class Connect_bots:
                         st.write(self.gemini_response)
                         message = {"role": "bard", "content": self.gemini_response}
                         st.session_state.messages.append(message) # Add response to message history
-            #wait for 200ms
-            # If last message is not from groq, generate a new response wait for 200ms
-            # wait = 0
-            # while wait < 500:
-            #     wait+=1
-
-        
+                        
             if st.session_state.messages[-1]["role"] != "groq":
                 with st.chat_message("groq"):
                     with st.spinner("brooding"):
@@ -119,6 +86,34 @@ class Gemini:
         return gemini_response
 
 if __name__ == "__main__":
-    connect = Connect_bots()
+
+    st.session_state.chat_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
+    st.session_state.messages = [
+                    {"role": "bard", "content": "I'm bard"},
+                    {"role": "groq", "content": "I'm groq"},
+                    ]
+        
+
+    input_msg = st.text_input("Talk to Groq and Bard about humans")
+    # if input_msg:
+
+    bard_template = """You are having a friendly discussion with groq about humans. Keep your responses simple, short and concise.
+
+    Previous conversation:
+    {history}
+    groq: {input}
+    bard:
+
+    """
+    groq_template = """You are having a friendly discussion with bard about humans. Keep your responses simple, short and concise.
+    Previous conversation:
+    {history}
+    bard: {input}
+    groq: 
+
+    """
+    gemini_prompt_template = PromptTemplate(input_variables=["history", "input"], template=bard_template)
+    groq_prompt_template = PromptTemplate(input_variables=["history", "input"], template=groq_template)
+    connect = Connect_bots(gemini_prompt_template,groq_prompt_template)
     connect.converse()
 
