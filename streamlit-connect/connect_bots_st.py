@@ -14,46 +14,59 @@ groq_api_key = os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
 
 class Connect_bots:
-    def __init__(self,gemini_prompt_template,groq_prompt_template):
+    def __init__(self, gemini_prompt_template, groq_prompt_template):
         self.gemini = Gemini(gemini_prompt_template)
         self.groq = Groq(groq_prompt_template)
-        self.groq_response = st.session_state.messages[-1]["content"]
+        self.groq_response = ""
         self.gemini_response = ""
     
-    # def input_prompt(self):
-    #     if input_msg:
-    #         formatted_msg = f"I'm Groq. Let's have a conversation about {input_msg}"
-    #         st.session_state.messages.append({"role": "groq", "content": formatted_msg})
-    #         self.converse()
+    def input_prompt(self):
+        # Use st.text_input with a key and store the result
+        input_msg = st.text_input("Let Groq and Bard talk about", key="user_input")
+        
+        # Initialize session state for conversation if not exists
+        if 'conversation_started' not in st.session_state:
+            st.session_state.conversation_started = False
+            
+        # Check if there's new input and the enter key was pressed
+        if input_msg and not st.session_state.conversation_started:
+            st.session_state.messages = [
+                {"role": "USER", "content": input_msg},
+                {"role": "bard", "content": f"Hello! I'm Bard. Let's talk about {input_msg}"},
+                {"role": "groq", "content": f"Hi! I'm Groq. I'd love to discuss {input_msg}"}
+            ]
+            self.groq_response = st.session_state.messages[-1]["content"]
+            st.session_state.conversation_started = True
+            return True
+            
+        return st.session_state.conversation_started
 
-    def converse(self):
+    async def converse(self):
         exit_chat = 5
-        # groq_response = "Lets have a conversation"
-        # while exit_chat >0:        
+        
+        # Display existing messages
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.write(message["content"])
         
-        while exit_chat>0:
-         # If last message is not from gemini, generate a new response
+        while exit_chat > 0:
+            # If last message is not from gemini, generate a new response
             if st.session_state.messages[-1]["role"] != "bard":
                 with st.chat_message("bard"):
                     with st.spinner("Thinking..."):
                         self.gemini_response = self.gemini.chat_with_gemini(self.groq_response)
                         st.write(self.gemini_response)
                         message = {"role": "bard", "content": self.gemini_response}
-                        st.session_state.messages.append(message) # Add response to message history
+                        st.session_state.messages.append(message)
                         
             if st.session_state.messages[-1]["role"] != "groq":
                 with st.chat_message("groq"):
                     with st.spinner("brooding"):
                         self.groq_response = self.groq.chat_with_groq(self.gemini_response)
                         st.write(self.groq_response)
-                        message = {"role":"groq","content":self.groq_response}
+                        message = {"role": "groq", "content": self.groq_response}
                         st.session_state.messages.append(message)
-            exit_chat-=1
-        return
-            
+            exit_chat -= 1
 
 class Groq:
     def __init__(self,prompt_template):
@@ -64,7 +77,7 @@ class Groq:
             )
         self.groq_conversation = ConversationChain(memory=st.session_state.chat_memory, 
                                                 llm=self.groq_chat,
-                                                verbose=True,
+                                                # verbose=True,
                                                 prompt = prompt_template)
 
     def chat_with_groq(self,prompt):
@@ -78,26 +91,27 @@ class Gemini:
                                                   )
         self.gemini_conversation = ConversationChain(memory=st.session_state.chat_memory,     
                                                 llm=self.gemini_chat,
-                                                verbose=True,
+                                                # verbose=True,
                                                 prompt = prompt_template)
 
     def chat_with_gemini(self,prompt):
         gemini_response = self.gemini_conversation.predict(input = prompt)
         return gemini_response
-
-if __name__ == "__main__":
+    
+    
+async def main():
 
     st.session_state.chat_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
     st.session_state.messages = [
+                    # {"role": "USER", "content": "talk about dogs"},
                     {"role": "bard", "content": "I'm bard"},
                     {"role": "groq", "content": "I'm groq"},
                     ]
         
 
-    input_msg = st.text_input("Talk to Groq and Bard about humans")
     # if input_msg:
 
-    bard_template = """You are having a friendly discussion with groq about humans. Keep your responses simple, short and concise.
+    bard_template = """You are bard and having a friendly discussion with groq which is an AI about whatever the USER has asked. Keep your responses simple, short and concise.
 
     Previous conversation:
     {history}
@@ -105,7 +119,7 @@ if __name__ == "__main__":
     bard:
 
     """
-    groq_template = """You are having a friendly discussion with bard about humans. Keep your responses simple, short and concise.
+    groq_template = """You are groq and having a friendly discussion with bard which is an AI about whatever the USER has asked. Keep your responses simple, short and concise.
     Previous conversation:
     {history}
     bard: {input}
@@ -115,5 +129,11 @@ if __name__ == "__main__":
     gemini_prompt_template = PromptTemplate(input_variables=["history", "input"], template=bard_template)
     groq_prompt_template = PromptTemplate(input_variables=["history", "input"], template=groq_template)
     connect = Connect_bots(gemini_prompt_template,groq_prompt_template)
-    connect.converse()
+    
+    if connect.input_prompt():
+        await connect.converse()
+    
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
 
